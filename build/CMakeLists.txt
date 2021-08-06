@@ -20,13 +20,13 @@ if ( IOS )
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
 endif ()
 
-option ( UINT_ESPECIALLY "using custom ulong" OFF )
-option ( USING_LUAJIT "using luajit" OFF )
+option ( UINT_ESPECIALLY "using custom ulong" ON )
+option ( USING_LUAJIT "using luajit" ON )
 option ( GC64 "using gc64" OFF )
 option ( LUAC_COMPATIBLE_FORMAT "compatible format" OFF )
 
 find_path(XLUA_PROJECT_DIR NAMES SConstruct
-    PATHS 
+    PATHS
     ${CMAKE_SOURCE_DIR}
     NO_DEFAULT_PATH
     )
@@ -41,7 +41,7 @@ set(LUA_SRC_PATH lua-${LUA_VERSION}/src)
 set(LUAJIT_SRC_PATH luajit-2.1.0b3/src)
 
 if (USING_LUAJIT)
-	
+
     if (APPLE AND NOT IOS AND NOT ANDROID)
 	    include_directories(
 		  ${CMAKE_SOURCE_DIR}
@@ -50,10 +50,10 @@ if (USING_LUAJIT)
 		  ${CMAKE_CURRENT_BINARY_DIR}
 		  ${THIRDPART_INC}
 	    )
-	    set ( LUA_CORE lua-5.1.5/src/lapi.c lua-5.1.5/src/lcode.c lua-5.1.5/src/ldebug.c lua-5.1.5/src/ldo.c lua-5.1.5/src/ldump.c lua-5.1.5/src/lfunc.c 
-          lua-5.1.5/src/lgc.c lua-5.1.5/src/llex.c lua-5.1.5/src/lmem.c lua-5.1.5/src/lobject.c lua-5.1.5/src/lopcodes.c lua-5.1.5/src/lparser.c lua-5.1.5/src/lstate.c 
-          lua-5.1.5/src/lstring.c lua-5.1.5/src/ltable.c lua-5.1.5/src/ltm.c lua-5.1.5/src/lundump.c lua-5.1.5/src/lvm.c lua-5.1.5/src/lzio.c lua-5.1.5/src/lauxlib.c 
-          lua-5.1.5/src/lbaselib.c lua-5.1.5/src/ldblib.c lua-5.1.5/src/liolib.c lua-5.1.5/src/lmathlib.c lua-5.1.5/src/loslib.c lua-5.1.5/src/ltablib.c 
+	    set ( LUA_CORE lua-5.1.5/src/lapi.c lua-5.1.5/src/lcode.c lua-5.1.5/src/ldebug.c lua-5.1.5/src/ldo.c lua-5.1.5/src/ldump.c lua-5.1.5/src/lfunc.c
+          lua-5.1.5/src/lgc.c lua-5.1.5/src/llex.c lua-5.1.5/src/lmem.c lua-5.1.5/src/lobject.c lua-5.1.5/src/lopcodes.c lua-5.1.5/src/lparser.c lua-5.1.5/src/lstate.c
+          lua-5.1.5/src/lstring.c lua-5.1.5/src/ltable.c lua-5.1.5/src/ltm.c lua-5.1.5/src/lundump.c lua-5.1.5/src/lvm.c lua-5.1.5/src/lzio.c lua-5.1.5/src/lauxlib.c
+          lua-5.1.5/src/lbaselib.c lua-5.1.5/src/ldblib.c lua-5.1.5/src/liolib.c lua-5.1.5/src/lmathlib.c lua-5.1.5/src/loslib.c lua-5.1.5/src/ltablib.c
           lua-5.1.5/src/lstrlib.c lua-5.1.5/src/linit.c lua-5.1.5/src/loadlib.c)
 	else ()
 	    include_directories(
@@ -103,7 +103,7 @@ set ( LUA_SOCKET
     luasocket/select.c
     luasocket/tcp.c
     luasocket/timeout.c
-    luasocket/udp.c 
+    luasocket/udp.c
 )
 
 if ( WIN32 AND NOT CYGWIN )
@@ -111,6 +111,42 @@ if ( WIN32 AND NOT CYGWIN )
 else ( )
     list (APPEND LUA_SOCKET luasocket/usocket.c)
 endif ( )
+
+#begin lfs
+set (LFS_SRC lfs/lfs.c)
+set_property(
+    SOURCE ${LFS_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC lfs)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LFS_SRC})
+#end lfs
+
+#begin bitop
+set (BITOP_SRC bitop/bit.c)
+set_property(
+    SOURCE ${BITOP_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC bitop)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${BITOP_SRC})
+#end bitop
+
+#begin msgpack
+set (MSGPACK_SRC msgpack/lua_cmsgpack.c)
+set_property(
+    SOURCE ${MSGPACK_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC msgpack)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${MSGPACK_SRC})
+#end lfs
 
 set ( XLUA_CORE
     i64lib.c
@@ -208,18 +244,18 @@ set_property(
 if(UINT_ESPECIALLY)
     ADD_DEFINITIONS(-DUINT_ESPECIALLY)
 endif()
-	
+
 if ( WIN32 AND NOT CYGWIN )
     if (USING_LUAJIT)
         target_link_libraries(xlua
             ${CMAKE_SOURCE_DIR}/${LUAJIT_SRC_PATH}/lua51.lib
             ws2_32
-            ${THIRDPART_LIB} 
+            ${THIRDPART_LIB}
         )
     else ()
         target_link_libraries(xlua
             ws2_32
-            ${THIRDPART_LIB} 
+            ${THIRDPART_LIB}
         )
     endif()
 else ( )
@@ -227,12 +263,12 @@ else ( )
 		target_link_libraries(xlua
 			${CMAKE_SOURCE_DIR}/${LUAJIT_SRC_PATH}/libluajit.a
 			m
-            ${THIRDPART_LIB} 
+            ${THIRDPART_LIB}
 		)
     else ()
         target_link_libraries(xlua
             m
-            ${THIRDPART_LIB} 
+            ${THIRDPART_LIB}
         )
     endif()
 endif ( )
