@@ -124,6 +124,18 @@ list(APPEND THIRDPART_INC lfs)
 set (THIRDPART_SRC ${THIRDPART_SRC} ${LFS_SRC})
 #end lfs
 
+#begin lpack
+set (LPACK_SRC lpack/lpack.c)
+set_property(
+    SOURCE ${LPACK_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC lpack)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LPACK_SRC})
+#end lpack
+
 #begin bitop
 set (BITOP_SRC bitop/bit.c)
 set_property(
