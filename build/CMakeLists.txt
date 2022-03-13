@@ -20,8 +20,8 @@ if ( IOS )
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fembed-bitcode")
 endif ()
 
-option ( UINT_ESPECIALLY "using custom ulong" ON )
-option ( USING_LUAJIT "using luajit" ON )
+option ( UINT_ESPECIALLY "using custom ulong" OFF )
+option ( USING_LUAJIT "using luajit" OFF )
 option ( GC64 "using gc64" OFF )
 option ( LUAC_COMPATIBLE_FORMAT "compatible format" OFF )
 
@@ -39,6 +39,17 @@ endif()
 
 set(LUA_SRC_PATH lua-${LUA_VERSION}/src)
 set(LUAJIT_SRC_PATH luajit-2.1.0b3/src)
+#begin lua-rapidjson
+set (RAPIDJSON_SRC lua-rapidjson/source/rapidjson.cpp)
+set_property(
+	SOURCE ${RAPIDJSON_SRC}
+	APPEND
+	PROPERTY COMPILE_DEFINITIONS
+	LUA_LIB
+)
+list(APPEND THIRDPART_INC  lua-rapidjson/include)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${RAPIDJSON_SRC})
+#end lua-rapidjson
 
 if (USING_LUAJIT)
 
@@ -103,7 +114,7 @@ set ( LUA_SOCKET
     luasocket/select.c
     luasocket/tcp.c
     luasocket/timeout.c
-    luasocket/udp.c
+    luasocket/udp.c 
 )
 
 if ( WIN32 AND NOT CYGWIN )
@@ -136,6 +147,20 @@ list(APPEND THIRDPART_INC lpack)
 set (THIRDPART_SRC ${THIRDPART_SRC} ${LPACK_SRC})
 #end lpack
 
+#begin lrandom
+set (LRANDOM_SRC 
+    lrandom/random.c
+    lrandom/lrandom.c)
+set_property(
+    SOURCE ${LRANDOM_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC lrandom)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LRANDOM_SRC})
+#end lrandom
+
 #begin bitop
 set (BITOP_SRC bitop/bit.c)
 set_property(
@@ -148,6 +173,52 @@ list(APPEND THIRDPART_INC bitop)
 set (THIRDPART_SRC ${THIRDPART_SRC} ${BITOP_SRC})
 #end bitop
 
+#begin lpeg
+set (LPEG_SRC 
+    lpeg/lpcap.c
+    lpeg/lpcode.c
+    lpeg/lpprint.c
+    lpeg/lptree.c
+    lpeg/lpvm.c)
+set_property(
+    SOURCE ${LPEG_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC lpeg)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${LPEG_SRC})
+#end lpeg
+
+#begin sproto
+set (SPROTO_SRC 
+    sproto/lsproto.c
+    sproto/sproto.c)
+set_property(
+    SOURCE ${SPROTO_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC sproto)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${SPROTO_SRC})
+#end sproto
+
+#begin cjson
+set (CJSON_SRC 
+    cjson/fpconv.c
+    cjson/strbuf.c
+    cjson/lua_cjson.c)
+set_property(
+    SOURCE ${CJSON_SRC}
+    APPEND
+    PROPERTY COMPILE_DEFINITIONS
+    LUA_LIB
+)
+list(APPEND THIRDPART_INC cjson)
+set (THIRDPART_SRC ${THIRDPART_SRC} ${CJSON_SRC})
+#end cjson
+
 #begin msgpack
 set (MSGPACK_SRC msgpack/lua_cmsgpack.c)
 set_property(
@@ -158,7 +229,7 @@ set_property(
 )
 list(APPEND THIRDPART_INC msgpack)
 set (THIRDPART_SRC ${THIRDPART_SRC} ${MSGPACK_SRC})
-#end lfs
+#end msgpack
 
 set ( XLUA_CORE
     i64lib.c
@@ -256,18 +327,18 @@ set_property(
 if(UINT_ESPECIALLY)
     ADD_DEFINITIONS(-DUINT_ESPECIALLY)
 endif()
-
+	
 if ( WIN32 AND NOT CYGWIN )
     if (USING_LUAJIT)
         target_link_libraries(xlua
             ${CMAKE_SOURCE_DIR}/${LUAJIT_SRC_PATH}/lua51.lib
             ws2_32
-            ${THIRDPART_LIB}
+            ${THIRDPART_LIB} 
         )
     else ()
         target_link_libraries(xlua
             ws2_32
-            ${THIRDPART_LIB}
+            ${THIRDPART_LIB} 
         )
     endif()
 else ( )
@@ -275,12 +346,12 @@ else ( )
 		target_link_libraries(xlua
 			${CMAKE_SOURCE_DIR}/${LUAJIT_SRC_PATH}/libluajit.a
 			m
-            ${THIRDPART_LIB}
+            ${THIRDPART_LIB} 
 		)
     else ()
         target_link_libraries(xlua
             m
-            ${THIRDPART_LIB}
+            ${THIRDPART_LIB} 
         )
     endif()
 endif ( )

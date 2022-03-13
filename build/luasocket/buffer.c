@@ -134,7 +134,8 @@ int buffer_meth_receive(lua_State *L, p_buffer buf) {
             err = recvraw(buf, wanted-size, &b);
     }
     /* check if there was an error */
-    if (err != IO_DONE) {
+	
+    if (err != IO_DONE && b.p == b.buffer) {
         /* we can't push anyting in the stack before pushing the
          * contents of the buffer. this is the reason for the complication */
         luaL_pushresult(&b);
@@ -218,7 +219,12 @@ static int recvall(p_buffer buf, luaL_Buffer *b) {
     if (err == IO_CLOSED) {
         if (total > 0) return IO_DONE;
         else return IO_CLOSED;
-    } else return err;
+    } else {
+		if(err == IO_TIMEOUT && total > 0){
+			return IO_DONE;
+		}
+		else return err;
+	}
 }
 
 /*-------------------------------------------------------------------------*\
